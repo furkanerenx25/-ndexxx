@@ -1,1 +1,145 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aley Quiz</title>
+<!-- confetti (cdn) -->
+<script defer src="https://unpkg.com/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+  :root{--bg1:#7c3aed;--bg2:#db2777;--bg3:#e11d48}
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    color:#fff;background:linear-gradient(to bottom,var(--bg1),var(--bg2),var(--bg3));
+    text-align:center;padding:16px;
+  }
+  .card{
+    width:min(720px,100%);background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px);
+    border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:28px;
+  }
+  h1,h2{margin:.2em 0}
+  .btn{
+    background:#fff;color:#a21caf;font-weight:700;border:0;border-radius:14px;
+    padding:14px 22px;cursor:pointer;margin:8px;font-size:18px;transition:transform .15s ease;
+  }
+  .btn:hover{transform:scale(1.05)}
+  .btn:active{transform:scale(.97)}
+  .choice-big{color:#a21caf}.choice-small{color:#047857}
+  .danger{color:#ef4444}
+  .drop{margin-top:14px}
+  .preview{margin-top:14px;border:2px dashed rgba(255,255,255,.5);border-radius:14px;padding:14px}
+  img,video{max-width:100%;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .hint{opacity:.85;font-size:14px;margin-top:8px}
+</style>
+</head>
+<body>
+<main class="card" id="app">
+  <h1>Aley'e Özel Bilgi Yarışması</h1>
+  <p>Konfetiler patlıyor 🎉 — başlamak için aşağıya tıkla.</p>
+  <button class="btn" onclick="startQuiz()">Yarışmaya Başla</button>
+</main>
 
+<!-- sesler (aynı klasörde olacaklar) -->
+<audio id="quizMusic" src="quiz.mp3" loop></audio>
+<audio id="loseMusic" src="lose.mp3"></audio>
+<audio id="winMusic"  src="win.mp3"></audio>
+
+<script>
+/* -------- konfeti -------- */
+function boom(opts={}) {
+  if (!window.confetti) return;
+  confetti(Object.assign({
+    particleCount: 120, spread: 70, origin: { y: 0.6 }, scalar: 1
+  }, opts));
+}
+let introTimer;
+/* intro’da hafif konfeti yağsın */
+(function introConfetti(){
+  const fire = ()=>boom();
+  fire(); setTimeout(fire, 600);
+  introTimer = setInterval(fire, 1600);
+})();
+
+/* -------- durum ve elemanlar -------- */
+let phase = "intro";
+const app = document.getElementById("app");
+const quizMusic = document.getElementById("quizMusic");
+const loseMusic = document.getElementById("loseMusic");
+const winMusic  = document.getElementById("winMusic");
+
+function safePlay(audio){
+  if(!audio) return;
+  const p = audio.play();
+  if (p && typeof p.then === "function") p.catch(()=>{/* sessiz engellendiyse önemsemeyelim */});
+}
+
+/* -------- ekranlar -------- */
+function startQuiz() {
+  clearInterval(introTimer);
+  phase = "question";
+  safePlay(quizMusic);
+  app.innerHTML = `
+    <h2>Soru: Aley <b>büyük</b> müdür yoksa <b>küçük</b müdür?</h2>
+    <div>
+      <button class="btn choice-big" onclick="chooseBig()">Büyük</button>
+      <button class="btn choice-small" onclick="chooseSmall()">Küçük</button>
+    </div>
+    <p class="hint">Cevabı seç 😉</p>
+  `;
+}
+
+function chooseBig() {
+  quizMusic.pause();
+  safePlay(loseMusic);
+  phase = "big";
+  app.innerHTML = `
+    <h2 class="danger">ALEYLENDİNİZ!!!</h2>
+    <p>Bir fotoğraf yükle:</p>
+    <input class="drop" type="file" accept="image/*" onchange="previewImage(event)" />
+    <div id="preview" class="preview">Fotoğraf yüklenmedi…</div>
+    <button class="btn" onclick="restart()">Başa Dön</button>
+  `;
+}
+
+function chooseSmall() {
+  quizMusic.pause();
+  safePlay(winMusic);
+  phase = "small";
+  boom(); setTimeout(boom, 700);
+  app.innerHTML = `
+    <h2>Doğru cevap! 🎉</h2>
+    <video src="happi.mp4" autoplay loop playsinline controls></video>
+    <p class="hint">Video görünmezse dosya adının <b>happi.mp4</b> olduğundan emin ol.</p>
+    <button class="btn" onclick="restart()">Tekrar Oyna</button>
+  `;
+}
+
+function previewImage(e) {
+  const file = e.target.files && e.target.files[0];
+  const box = document.getElementById("preview");
+  if (!file) { box.textContent = "Fotoğraf yüklenmedi…"; return; }
+  const url = URL.createObjectURL(file);
+  box.innerHTML = `<img src="${url}" alt="Yüklenen görsel">`;
+}
+
+function restart(){
+  winMusic.pause(); winMusic.currentTime = 0;
+  loseMusic.pause(); loseMusic.currentTime = 0;
+  phase = "intro";
+  app.innerHTML = `
+    <h1>Aley'e Özel Bilgi Yarışması</h1>
+    <p>Konfetiler patlıyor 🎉 — başlamak için aşağıya tıkla.</p>
+    <button class="btn" onclick="startQuiz()">Yarışmaya Başla</button>
+  `;
+  (function introConfettiAgain(){
+    const fire = ()=>boom();
+    fire(); setTimeout(fire, 600);
+    introTimer = setInterval(fire, 1600);
+  })();
+}
+</script>
+</body>
+</html>
