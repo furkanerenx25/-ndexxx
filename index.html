@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Aley Quiz</title>
-<!-- confetti (cdn) -->
 <script defer src="https://unpkg.com/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
   :root{--bg1:#7c3aed;--bg2:#db2777;--bg3:#e11d48}
@@ -38,33 +37,21 @@
 <body>
 <main class="card" id="app">
   <h1>Aley'e Özel Bilgi Yarışması</h1>
-  <p>Konfetiler patlıyor 🎉 — başlamak için aşağıya tıkla.</p>
   <button class="btn" onclick="startQuiz()">Yarışmaya Başla</button>
 </main>
 
-<!-- sesler (aynı klasörde olacaklar) -->
 <audio id="quizMusic" src="quiz.mp3" loop></audio>
 <audio id="loseMusic" src="lose.mp3"></audio>
 <audio id="winMusic"  src="win.mp3"></audio>
 
 <script>
-/* -------- konfeti -------- */
 function boom(opts={}) {
   if (!window.confetti) return;
   confetti(Object.assign({
-    particleCount: 120, spread: 70, origin: { y: 0.6 }, scalar: 1
+    particleCount: 150, spread: 90, origin: { y: 0.6 }, scalar: 1
   }, opts));
 }
-let introTimer;
-/* intro’da hafif konfeti yağsın */
-(function introConfetti(){
-  const fire = ()=>boom();
-  fire(); setTimeout(fire, 600);
-  introTimer = setInterval(fire, 1600);
-})();
 
-/* -------- durum ve elemanlar -------- */
-let phase = "intro";
 const app = document.getElementById("app");
 const quizMusic = document.getElementById("quizMusic");
 const loseMusic = document.getElementById("loseMusic");
@@ -73,13 +60,10 @@ const winMusic  = document.getElementById("winMusic");
 function safePlay(audio){
   if(!audio) return;
   const p = audio.play();
-  if (p && typeof p.then === "function") p.catch(()=>{/* sessiz engellendiyse önemsemeyelim */});
+  if (p && typeof p.then === "function") p.catch(()=>{});
 }
 
-/* -------- ekranlar -------- */
 function startQuiz() {
-  clearInterval(introTimer);
-  phase = "question";
   safePlay(quizMusic);
   app.innerHTML = `
     <h2>Soru: Aley <b>büyük</b> müdür yoksa <b>küçük</b müdür?</h2>
@@ -94,7 +78,6 @@ function startQuiz() {
 function chooseBig() {
   quizMusic.pause();
   safePlay(loseMusic);
-  phase = "big";
   app.innerHTML = `
     <h2 class="danger">ALEYLENDİNİZ!!!</h2>
     <p>Bir fotoğraf yükle:</p>
@@ -107,7 +90,6 @@ function chooseBig() {
 function chooseSmall() {
   quizMusic.pause();
   safePlay(winMusic);
-  phase = "small";
   boom(); setTimeout(boom, 700);
   app.innerHTML = `
     <h2>Doğru cevap! 🎉</h2>
@@ -128,18 +110,15 @@ function previewImage(e) {
 function restart(){
   winMusic.pause(); winMusic.currentTime = 0;
   loseMusic.pause(); loseMusic.currentTime = 0;
-  phase = "intro";
   app.innerHTML = `
     <h1>Aley'e Özel Bilgi Yarışması</h1>
-    <p>Konfetiler patlıyor 🎉 — başlamak için aşağıya tıkla.</p>
     <button class="btn" onclick="startQuiz()">Yarışmaya Başla</button>
   `;
-  (function introConfettiAgain(){
-    const fire = ()=>boom();
-    fire(); setTimeout(fire, 600);
-    introTimer = setInterval(fire, 1600);
-  })();
+  boom(); setTimeout(boom, 600);
 }
+
+// Sayfa açıldığında konfeti
+window.onload = () => { boom(); setTimeout(boom, 600); };
 </script>
 </body>
 </html>
