@@ -28,8 +28,6 @@
   .btn:active{transform:scale(.97)}
   .choice-big{color:#a21caf}.choice-small{color:#047857}
   .danger{color:#ef4444}
-  .drop{margin-top:14px}
-  .preview{margin-top:14px;border:2px dashed rgba(255,255,255,.5);border-radius:14px;padding:14px}
   img,video{max-width:100%;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
   .hint{opacity:.85;font-size:14px;margin-top:8px}
 </style>
@@ -40,9 +38,9 @@
   <button class="btn" onclick="startQuiz()">Yarışmaya Başla</button>
 </main>
 
-<audio id="quizMusic" src="quiz.mp3" loop></audio>
-<audio id="loseMusic" src="lose.mp3"></audio>
-<audio id="winMusic"  src="win.mp3"></audio>
+<audio id="quizMusic" src="media/quiz.mp3" loop></audio>
+<audio id="loseMusic" src="media/lose.mp3"></audio>
+<audio id="winMusic"  src="media/win.mp3"></audio>
 
 <script>
 function boom(opts={}) {
@@ -93,9 +91,7 @@ function chooseBig() {
   safePlay(loseMusic);
   app.innerHTML = `
     <h2 class="danger">ALEYLENDİNİZ!!!</h2>
-    <p>Bir fotoğraf yükle:</p>
-    <input class="drop" type="file" accept="image/*" onchange="previewImage(event)" />
-    <div id="preview" class="preview">Fotoğraf yüklenmedi…</div>
+    <video src="media/yanlis.mp4" autoplay loop playsinline controls></video>
     <button class="btn" onclick="restart()">Başa Dön</button>
   `;
 }
@@ -106,18 +102,9 @@ function chooseSmall() {
   startConfetti();
   app.innerHTML = `
     <h2>Doğru cevap! 🎉</h2>
-    <video src="happi.mp4" autoplay loop playsinline controls></video>
-    <p class="hint">Video görünmezse dosya adının <b>happi.mp4</b> olduğundan emin ol.</p>
+    <video src="media/dogru.mp4" autoplay loop playsinline controls></video>
     <button class="btn" onclick="restart()">Tekrar Oyna</button>
   `;
-}
-
-function previewImage(e) {
-  const file = e.target.files && e.target.files[0];
-  const box = document.getElementById("preview");
-  if (!file) { box.textContent = "Fotoğraf yüklenmedi…"; return; }
-  const url = URL.createObjectURL(file);
-  box.innerHTML = `<img src="${url}" alt="Yüklenen görsel">`;
 }
 
 function restart(){
