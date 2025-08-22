@@ -63,10 +63,23 @@ function safePlay(audio){
   if (p && typeof p.then === "function") p.catch(()=>{});
 }
 
+// Sürekli konfeti
+let confettiInterval;
+function startConfetti() {
+  if (confettiInterval) return;
+  confettiInterval = setInterval(() => {
+    boom({ particleCount: 100, spread: 120, origin: { y: Math.random() * 0.6 } });
+  }, 500);
+}
+function stopConfetti() {
+  clearInterval(confettiInterval);
+  confettiInterval = null;
+}
+
 function startQuiz() {
   safePlay(quizMusic);
   app.innerHTML = `
-    <h2>Soru: Aley <b>büyük</b> müdür yoksa <b>küçük</b müdür?</h2>
+    <h2>Soru: Aley <b>büyük</b> müdür yoksa <b>küçük</b> müdür?</h2>
     <div>
       <button class="btn choice-big" onclick="chooseBig()">Büyük</button>
       <button class="btn choice-small" onclick="chooseSmall()">Küçük</button>
@@ -90,7 +103,7 @@ function chooseBig() {
 function chooseSmall() {
   quizMusic.pause();
   safePlay(winMusic);
-  boom(); setTimeout(boom, 700);
+  startConfetti();
   app.innerHTML = `
     <h2>Doğru cevap! 🎉</h2>
     <video src="happi.mp4" autoplay loop playsinline controls></video>
@@ -108,17 +121,17 @@ function previewImage(e) {
 }
 
 function restart(){
+  stopConfetti();
   winMusic.pause(); winMusic.currentTime = 0;
   loseMusic.pause(); loseMusic.currentTime = 0;
   app.innerHTML = `
     <h1>Aley'e Özel Bilgi Yarışması</h1>
     <button class="btn" onclick="startQuiz()">Yarışmaya Başla</button>
   `;
-  boom(); setTimeout(boom, 600);
 }
 
-// Sayfa açıldığında konfeti
-window.onload = () => { boom(); setTimeout(boom, 600); };
+// Sayfa açıldığında sürekli konfeti
+window.onload = () => { startConfetti(); };
 </script>
 </body>
 </html>
